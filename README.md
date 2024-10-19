@@ -91,14 +91,112 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://myuser:mypassword@localhos
 - **URL**: `/create_rule`
 - **Method**: POST
 - **Payload**:
-```json
+- **Description**: Creates a new rule and stores it in the database.
+- **Request Body (JSON)**:
 {
  "rule": "age > 18 AND (income > 50000 OR credit_score > 700)"
 }
 
+- **Response**: Returns the created rule as a JSON object
 
-   
+#### Evaluate Rule
+- **URL**: `/evaluate_rule`
+- **Method**: POST
+- **Payload**:
+- **Description**: Evaluates a stored rule against provided user data.
+- **Request Body (JSON)**:
+  {
+  "rule": {
+    "id": "rule_id",
+    "type": "AND",
+    "value": null,
+    "left": {"type": ">", "value": "age", "left": null, "right": {"type": "VALUE", "value": "18"}},
+    "right": {"type": "OR", "value": null,
+              "left": {"type": ">", "value": "income", "left": null, "right": {"type": "VALUE", "value": "50000"}},
+              "right": {"type": ">", "value": "credit_score", "left": null, "right": {"type": "VALUE", "value": "700"}}}
+  },
+  "user_data": {"age": 25, "income": 60000, "credit_score": 750}
+}
+
+- **Response**: Returns the evaluation result (true/false)
+
+#### Combine Rule
+- **URL**: `/combine_rules`
+- **Method**: POST
+- **Payload**:
+- **Description**: Combines two existing rules into one using a logical operator (AND, OR).
+- **Request Body (JSON)**:
+  {
+  "rule1": {"id": "rule_id_1", "type": "CONDITION", "value": "age > 18", "left": null, "right": null},
+  "rule2": {"id": "rule_id_2", "type": "CONDITION", "value": "income > 50000", "left": null,  "right": null},
+  "operator": "AND"
+}
+
+- **Response**:  Returns the combined rule as a JSON object.
+
+##Testing with Postman
+- Install Postman from here.
+
+- Create a new request in Postman:
+
+**URL**: http://127.0.0.1:5000/api/create_rule
+**Method**: POST
+**Body**: Select raw and choose JSON, then add the following JSON:
+{
+  "rule": "((age > 30 AND department = 'Sales') OR experience > 5)"
+}
+
+- Test the Rule Evaluation:
+
+**URL**: http://127.0.0.1:5000/api/evaluate_rule
+**Method**: POST
+**Body**: Use JSON like:
+{
+  "rule_id": 1,
+  "user_data": {
+    "age": 35,
+    "department": "Sales",
+    "experience": 4
+  }
+}
+
+##Error Handling and Validation
+- **Invalid Rule Strings**: If the rule string has mismatched parentheses or invalid tokens, the system will return an error response with details:
+  {
+  "message": "Mismatched parentheses in rule string.",
+  "status": "error"
+}
+
+- **Rule Not Found**: If you attempt to evaluate or combine a rule that doesn’t exist.
+  {
+  "message": "Rule not found",
+  "status": "error"
+}
+
+**Empty Data**: Both rule creation and evaluation check for empty or missing data in the request payload.
+
+## Testing
+
+To run the tests, execute the following command:
+
+python test_api.py
+
+## Contributing
+We welcome contributions to the Rule Engine! Please follow these steps:
+
+1.Fork the repository.
+2.Create a new branch (git checkout -b feature/YourFeature).
+3.Make your changes and commit them (git commit -m 'Add your feature').
+4.Push to the branch (git push origin feature/YourFeature).
+5.Open a pull request.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+Thanks to the contributors and the open-source community for their support and inspiration.
 
 
+This README provides a more detailed overview of your rule engine application, including its features, tech stack, project structure, installation, usage, and core components. It also includes information on testing, contributing, licensing, and contact details.
 
 
